@@ -4,30 +4,45 @@
 
 #define PATH "/bin"
 
-void execute(char** command) {
-    //todo
+int execute(char** command) {
+    if (strcmp(command[0], "exit\n") == 0) {
+        return 0;
+    }
+    return 1;
 }
 
-void parseCommand(char* line) {
-    int i = 0;
+int parseCommand(char* line) {
+    int i = 0, status = 1;
     char* token = NULL;
-    char** command = (char**)malloc(sizeof(char));
-    while ((token = strtok_r(line, " ", &line)) != NULL) {
+    char* delim = " ";
+    char** command = (char**)malloc(strlen(line) * sizeof(char*));
+    while ((token = strtok_r(line, delim, &line)) != NULL) {
         command[i] = strdup(token);
         i++;
     }
-    execute(command);
+    status = execute(command);
+    for (int j = 0; j < i; j++) {
+            free(command[j]);
+        }
+        free(command);
+    if (status == 0)
+        return 0;
+    return 1;
 }
 
 void listen() {
+    int status = 1;
     size_t length = 0;
     char* line = NULL;
     printf("wish> ");
     while (getline(&line, &length, stdin) != -1) {
-        parseCommand(line);
+        status = parseCommand(line);
+        if (status == 0)
+            break;
         printf("wish> ");
     }
     free(line);
+    return;
 }
 
 int main(int argc, char** argv) {
@@ -36,4 +51,5 @@ int main(int argc, char** argv) {
     } else {
         listen();
     }
+    return 0;
 }
