@@ -1,13 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
-#define PATH "/bin"
+
+//Param 1: /bin/ls/
+
+//todo add /usr/bin/ to PATH
 
 int execute(char** command) {
-    if (strcmp(command[0], "exit\n") == 0) {
-        return 0;
+    int rc_wait;
+    int rc = fork();
+    char* PATH = (char*)malloc(sizeof(char*) * 5 + sizeof(char*) * strlen(command[0]));
+    strcpy(PATH, "/bin/");
+    strcat(PATH, command[0]);
+    //strcat(dir, command[0]);
+    if (rc < 0) {
+        fprintf(stderr, "Fork failed.\n");
+    } else if (rc == 0) {
+        //child
+        if (access(PATH, X_OK) == 0) {
+            execv(PATH, command);
+        } else {
+            //TODO /usr/bin
+            if (access(PATH, X_OK) == 0) {
+                execv(PATH, command);
+
+            } else {
+                fprintf(stderr, "Unknown command.");
+            }
+        }
+    } else {
+        rc_wait = wait(NULL);
     }
+    free(PATH);
     return 1;
 }
 
@@ -20,11 +47,12 @@ int parseCommand(char* line) {
         command[i] = strdup(token);
         i++;
     }
+    command[i + 1] = NULL;
     status = execute(command);
-    for (int j = 0; j < i; j++) {
-            free(command[j]);
-        }
-        free(command);
+    for (int j = 0; j < i + 1; j++) {
+        free(command[j]);
+    }
+    free(command);
     if (status == 0)
         return 0;
     return 1;
@@ -36,10 +64,12 @@ void listen() {
     char* line = NULL;
     printf("wish> ");
     while (getline(&line, &length, stdin) != -1) {
+        line[strlen(line) - 1] = '\0';
         status = parseCommand(line);
         if (status == 0)
             break;
-        printf("wish> ");
+        printf("\nwish> ");
+
     }
     free(line);
     return;

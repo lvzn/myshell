@@ -1,4 +1,8 @@
-wish: main.c
-	gcc main.c -o wish -Wall -Werror
+wish: main.o
+	gcc main.o -o wish -Wall
+
+main.o: main.c
+	gcc -Wall -c main.c
+
 clean:
-	rm -rf *.o
+	rm *.o wish
