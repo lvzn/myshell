@@ -12,6 +12,7 @@
 int execute(char** command) {
     int rc_wait;
     int rc = fork();
+    //Dynamically allocation memory for the path
     char* PATH = (char*)malloc(sizeof(char*) * 5 + sizeof(char*) * strlen(command[0]));
     strcpy(PATH, "/bin/");
     strcat(PATH, command[0]);
@@ -20,6 +21,7 @@ int execute(char** command) {
         fprintf(stderr, "Fork failed.\n");
     } else if (rc == 0) {
         //child
+        //Checking executing rights for the command
         if (access(PATH, X_OK) == 0) {
             execv(PATH, command);
         } else {
@@ -43,6 +45,7 @@ int parseCommand(char* line) {
     char* token = NULL;
     char* delim = " ";
     char** command = (char**)malloc(strlen(line) * sizeof(char*));
+    //Splitting the command to words by space and adding to the list
     while ((token = strtok_r(line, delim, &line)) != NULL) {
         command[i] = strdup(token);
         i++;
@@ -62,8 +65,10 @@ void listen() {
     int status = 1;
     size_t length = 0;
     char* line = NULL;
+    //Printing the indicator that the shell works
     printf("wish> ");
     while (getline(&line, &length, stdin) != -1) {
+        //Excluding "Enter" from the command
         line[strlen(line) - 1] = '\0';
         status = parseCommand(line);
         if (status == 0)
