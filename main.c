@@ -25,13 +25,7 @@ int execute(char** command) {
         if (access(PATH, X_OK) == 0) {
             execv(PATH, command);
         } else {
-            //TODO /usr/bin
-            if (access(PATH, X_OK) == 0) {
-                execv(PATH, command);
-
-            } else {
-                fprintf(stderr, "Unknown command.");
-            }
+            fprintf(stderr, "Unknown command.");
         }
     } else {
         //the path the parent (shell) heads to, during the fork
@@ -74,7 +68,7 @@ void listen() {
         status = parseCommand(line);
         if (status == 0)
             break;
-        printf("\nwish> ");
+        printf("wish> ");
 
     }
     free(line);
